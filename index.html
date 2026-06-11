@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>《伊院の藥物安全物語 ── 關於我成為藥安大師這檔事》</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #005b9f 0%, #00d2ff 100%);
+            --accent-gradient: linear-gradient(135deg, #4db6ac 0%, #00f2fe 100%);
+            --danger-gradient: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --panel-bg: rgba(255, 255, 255, 0.88);
+            --text-main: #1a2a3a;
+            --text-muted: #546e7a;
+            --game-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, 'Microsoft JhengHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Animated Flowing Background */
+        body {
+            background: linear-gradient(-45deg, #a18cd1, #fbc2eb, #8fd3f4, #84fab0);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Container */
+        #game-container {
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            max-height: 850px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2), inset 0 0 0 2px rgba(255,255,255,0.5);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            border-radius: 20px;
+        }
+
+        #game-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        #game-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #00d2ff, #005b9f);
+            border-radius: 3px;
+        }
+
+        .screen {
+            display: none;
+            padding: 25px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        /* Screen Fade & Slide Up Animation */
+        .screen.active {
+            display: flex;
+            animation: slideUpFade 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+        }
+
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(30px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Header UI & RPG HP Bar */
+        .status-bar {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 15px 20px;
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .status-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.05rem;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .hp-container {
+            width: 100%;
+            height: 14px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .hp-inner {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #ff416c, #ff4b2b);
+            box-shadow: 0 0 10px rgba(255, 65, 108, 0.8);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Area Badge / Status Badge */
+        .area-badge {
+            background: linear-gradient(90deg, #e0f2fe, #f0f9ff);
+            color: #0070c0;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 900;
+            font-size: 1.05rem;
+            margin-bottom: 15px;
+            border: 2px solid #bae6fd;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(0, 112, 192, 0.15);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .area-badge.danger {
+            background: linear-gradient(90deg, #ffebee, #ffcdd2);
+            color: #d32f2f;
+            border-color: #ef9a9a;
+            box-shadow: 0 4px 10px rgba(211, 47, 47, 0.2);
+        }
+
+        /* Colorful Title Design */
+        .title-wrapper {
+            margin: 20px 0 35px 0;
+            position: relative;
+            width: 100%;
+        }
+
+        .main-title {
+            font-size: 2.6rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #ff007a, #7000ff, #00d2ff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textShine 4s linear infinite;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.1));
+        }
+
+        @keyframes textShine {
+            to { background-position: 200% center; }
+        }
+
+        .sub-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ff6b6b;
+            letter-spacing: 0.5px;
+            padding-left: 20px;
+            text-align: right;
+            width: 90%;
+            margin: 0 auto;
+        }
+
+        .decor-line {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: rgba(112, 0, 255, 0.4);
+            letter-spacing: 4px;
+            margin: 12px 0;
+            text-transform: uppercase;
+        }
+
+        /* Custom Keyword Highlighting */
+        .highlight-text strong {
+            color: #ff007a;
+            font-weight: 900;
+            text-shadow: 0 0 12px rgba(255, 0, 122, 0.25);
+            padding: 0 2px;
+            letter-spacing: 0.5px;
+        }
+
+        #screen-feedback .highlight-text strong {
+            color: #11998e;
+            text-shadow: 0 0 12px rgba(17, 153, 142, 0.25);
+        }
+
+        /* Delayed Buttons for Animation Synchronization */
+        .delayed-btn {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(15px);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .delayed-btn.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        /* Animated Buttons Structure */
+        .btn {
+            -webkit-appearance: none;
+            appearance: none;
+            position: relative;
+            overflow: hidden;
+            color: white;
+            border: none;
+            padding: 18px 24px;
+            font-size: 1.25rem;
+            font-weight: 900;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 90%;
+            max-width: 350px;
+            margin: 15px auto;
+            letter-spacing: 1px;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 8px;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transform: skewX(-20deg);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::after { left: 150%; }
+        .btn:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25); }
+        .btn:active { transform: scale(0.95); }
+        
+        .btn-primary { background: var(--primary-gradient); }
+        .btn-danger { background: var(--danger-gradient); }
+        .btn-success { background: var(--success-gradient); animation: pulseGlow 2s infinite; }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(56, 239, 125, 0.6); }
+            70% { box-shadow: 0 0 0 15px rgba(56, 239, 125, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 239, 125, 0); }
+        }
+
+        /* Map Screen / Grid Layout */
+        .hospital-map {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .area-btn {
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255,255,255,0.9);
+            color: #0070c0;
+            border: 2px solid #e0f2fe;
+            padding: 22px 12px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            border-radius: 18px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .area-btn:not(.completed):hover {
+            border-color: #00d2ff;
+            background: linear-gradient(135deg, #ffffff, #e0f7fa);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 210, 255, 0.25);
+        }
+
+        .area-btn.completed {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #94a3b8;
+            box-shadow: none;
+            filter: grayscale(0.5);
+        }
+
+        /* RPG Inventory slots grid */
+        .inventory-container {
+            margin-top: 35px;
+            width: 100%;
+            background: rgba(248, 250, 252, 0.8);
+            border: 2px dashed #94a3b8;
+            border-radius: 20px;
+            padding: 20px 15px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .inventory-container h3 {
+            font-size: 1.2rem;
+            color: #334155;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+            font-weight: 900;
+        }
+
+        .inventory-slots {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .slot {
+            width: 65px;
+            height: 65px;
+            border: 2px solid #cbd5e1;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            background: #ffffff;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .slot.filled {
+            border-color: #fbbf24;
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.6), inset 0 0 10px rgba(255,255,255,0.8);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(1.05);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Floating Icons */
+        .float-icon {
+            font-size: 6rem;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 8px 15px rgba(0,0,0,0.2));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .treasure-icon {
+            font-size: 5rem;
+            margin: 5px 0 15px 0;
+            filter: drop-shadow(0 5px 15px rgba(255, 215, 0, 0.5));
+            animation: floatBounce 2.5s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        @keyframes floatBounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
+        }
+
+        /* Text Layouts with Bigger Fonts */
+        .animate-text {
+            font-size: 1.25rem;
+            line-height: 1.8;
+            font-weight: 600;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            text-align: left;
+            margin-bottom: 25px;
+            width: 100%;
+            line-height: 1.7;
+            background: linear-gradient(to right, #f0f7ff, #ffffff);
+            padding: 22px;
+            border-radius: 16px;
+            border-left: 6px solid #00d2ff;
+            box-shadow: var(--game-shadow);
+        }
+
+        .dialogue-box-container {
+            background: linear-gradient(to right, #f8faff, #ffffff);
+            padding: 25px;
+            border-radius: 16px;
+            border-left: 6px solid #7000ff;
+            box-shadow: var(--game-shadow);
+            width: 100%;
+            text-align: left;
+            font-size: 1.35rem;
+            line-height: 1.8;
+            color: var(--text-main);
+            min-height: 160px;
+        }
+
+        /* Character Fade Animation for Left-To-Right Effect */
+        .char-fade {
+            opacity: 0;
+            transform: translateX(-12px);
+            display: inline-block;
+            animation: charFadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes charFadeIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Colorful Options */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .option-btn {
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: white;
+            border: 2px solid #e2e8f0;
+            border-left: 6px solid transparent;
+            color: var(--text-main);
+            padding: 20px 22px;
+            font-size: 1.2rem;
+            border-radius: 14px;
+            text-align: center;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            line-height: 1.4;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            width: 100%;
+        }
+
+        .option-btn:hover {
+            border-color: #00d2ff;
+            border-left: 8px solid #00d2ff;
+            background: linear-gradient(90deg, #f0f9ff, #ffffff);
+            transform: scale(1.02) translateX(6px);
+            box-shadow: 0 6px 15px rgba(0, 210, 255, 0.2);
+        }
+
+        /* Feedback Window Style */
+        .feedback-box {
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 16px;
+            border: 2px solid #38ef7d;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 20px rgba(56, 239, 125, 0.15);
+        }
+        
+        .feedback-box .explanation {
+            margin-top: 15px;
+            font-size: 1.25rem;
+            color: #334155;
+            line-height: 1.7;
+        }
+
+        .loot-display {
+            font-size: 1.5rem;
+            color: #7000ff;
+            font-weight: 900;
+            margin: 15px 0;
+            background: linear-gradient(135deg, #fffbeb, #fef08a);
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px dashed #f59f00;
+            width: 100%;
+            box-shadow: 0 6px 15px rgba(245, 159, 0, 0.2);
+        }
+
+        /* Combine Animation Setup */
+        .combine-arena {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 40px auto;
+        }
+
+        .combine-item {
+            position: absolute;
+            font-size: 3.5rem;
+            filter: drop-shadow(0 5px 15px rgba(251, 191, 36, 0.8));
+            opacity: 0;
+            transition: all 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .combine-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 25px;
+            height: 25px;
+            background: radial-gradient(circle, #fff, #fef08a);
+            border-radius: 50%;
+            box-shadow: 0 0 50px 20px rgba(251, 191, 36, 0);
+            opacity: 0;
+            z-index: 10;
+        }
+
+        /* Flash overlay for transition */
+        #flash-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: white;
+            opacity: 0;
+            z-index: 100;
+            pointer-events: none;
+            display: none;
+        }
+
+        @keyframes superGlow {
+            0% { box-shadow: 0 0 20px 10px rgba(251, 191, 36, 0.4); transform: translate(-50%, -50%) scale(1); }
+            50% { box-shadow: 0 0 100px 50px rgba(251, 191, 36, 1); transform: translate(-50%, -50%) scale(5); }
+            100% { box-shadow: 0 0 200px 100px rgba(255, 255, 255, 1); transform: translate(-50%, -50%) scale(15); }
+        }
+
+        /* Shake Animation for Errors */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-8px); }
+            80% { transform: translateX(6px); }
+            100% { transform: translateX(0); }
+        }
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        .win-icon {
+            font-size: 6.5rem;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 10px 20px rgba(255, 215, 0, 0.5));
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .confetti {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
+
+<script>
+    // --- Security & Copyright Protection ---
+    document.addEventListener('contextmenu', event => event.preventDefault()); // 禁止右鍵
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12' || e.keyCode === 123) e.preventDefault(); // F12
+        if ((e.ctrlKey || e.metaKey) && (e.shiftKey || e.altKey) && (e.key === 'I' || e.key === 'i')) e.preventDefault(); // Ctrl+Shift+I
+        if ((e.ctrlKey || e.metaKey) && (e.shiftKey || e.altKey) && (e.key === 'J' || e.key === 'j')) e.preventDefault(); // Ctrl+Shift+J
+        if ((e.ctrlKey || e.metaKey) && (e.shiftKey || e.altKey) && (e.key === 'C' || e.key === 'c')) e.preventDefault(); // Ctrl+Shift+C
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) e.preventDefault(); // Ctrl+U
+    });
+</script>
+
+<div id="game-container">
+    <div id="flash-overlay"></div>
+
+    <div id="screen-start" class="screen">
+        <div class="float-icon">🏥</div>
+        <div class="title-wrapper">
+            <div class="main-title">伊院の藥物安全物語</div>
+            <div class="decor-line">- MedSafety Story in QE -</div>
+            <div class="sub-title">── 關於我成為藥安大師這檔事</div>
+        </div>
+        <div class="animate-text highlight-text" id="start-desc" style="margin-bottom: 35px; color: var(--text-muted); padding: 0 15px;">
+            傳聞喺五大區域之中，隱藏住五件閃閃發光嘅護士神器！想得到佢哋？靠蠻力係冇用嘅，唯有解開一個充滿挑戰嘅<strong>「藥物安全謎題」</strong>先可以打開寶箱搵到佢哋！新晉護士們，快啲組隊出發啦！只要集齊呢套傳說裝備，你就會成為<strong>「藥物安全大師」</strong>！Let's go！一齊踏上奇幻旅程，邁向屬於你嘅榮耀之路！
+        </div>
+        <button id="btn-start" class="btn btn-primary delayed-btn" onclick="startGame()">開始探索 (START)</button>
+    </div>
+
+    <div id="screen-map" class="screen" style="justify-content: flex-start; padding-top: 0;">
+        <div class="status-bar">
+            <div class="status-top">
+                <span>HP 生命值</span>
+                <span id="hp-text">10 / 10</span>
+            </div>
+            <div class="hp-container">
+                <div id="hp-bar-fill" class="hp-inner"></div>
+            </div>
+        </div>
+        <div style="padding: 20px 0; width: 100%;">
+            <h2 style="color: #0070c0; margin-bottom: 15px; text-align: left; font-size: 1.4rem; font-weight: 900; border-left: 5px solid #00d2ff; padding-left: 10px;">探索區域 (Select Area)</h2>
+            <div class="hospital-map" id="area-buttons">
+                </div>
+
+            <div class="inventory-container">
+                <h3>隨身背包 (Inventory)</h3>
+                <div class="inventory-slots" id="inventory-slots">
+                    <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
+                </div>
+            </div>
+
+            <button id="btn-combine" class="btn btn-success delayed-btn" style="margin-top: 25px; width: 100%; max-width: none;" onclick="playCombineAnimation()">⚡ 合成極品護士制服！</button>
+        </div>
+    </div>
+
+    <div id="screen-dialogue" class="screen" style="justify-content: flex-start; padding-top: 0;">
+        <div class="status-bar">
+            <div class="status-top">
+                <span>HP 生命值</span>
+                <span id="dialogue-hp-text"></span>
+            </div>
+            <div class="hp-container">
+                <div id="d-hp-bar-fill" class="hp-inner"></div>
+            </div>
+        </div>
+        
+        <div style="padding: 10px 0 20px 0; width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <div class="area-badge">📍 區域探索中...</div>
+            <div class="float-icon" style="font-size: 4.5rem; margin-bottom: 15px;">💬</div>
+            <div class="dialogue-box-container highlight-text" id="dialogue-box">
+                </div>
+            <button id="btn-start-puzzle" class="btn btn-primary delayed-btn" style="margin-top: 35px;" onclick="goToQuestion()">開始解謎 ✨</button>
+        </div>
+    </div>
+
+    <div id="screen-question" class="screen" style="justify-content: flex-start; padding-top: 0;">
+        <div class="status-bar">
+            <div class="status-top">
+                <span>HP 生命值</span>
+                <span id="q-hp-text"></span>
+            </div>
+            <div class="hp-container">
+                <div id="q-hp-bar-fill" class="hp-inner"></div>
+            </div>
+        </div>
+        
+        <div style="padding: 10px 0 20px 0; width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <div class="area-badge">📍 <span id="current-area-display"></span> ‧ 挑戰中</div>
+            <div class="treasure-icon">🎁</div>
+            <div class="question-text highlight-text" id="question-text">載入問題中...</div>
+            <div class="options-container delayed-btn" id="options-container">
+                </div>
+        </div>
+    </div>
+
+    <div id="screen-wrong" class="screen" style="justify-content: flex-start; padding-top: 0;">
+        <div class="status-bar" style="background: var(--danger-gradient);">
+            <div class="status-top">
+                <span>HP 生命值</span>
+                <span id="wrong-hp-text"></span>
+            </div>
+            <div class="hp-container">
+                <div id="w-hp-bar-fill" class="hp-inner"></div>
+            </div>
+        </div>
+        
+        <div style="padding: 10px 0 20px 0; width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <div class="area-badge danger">💥 挑戰受挫</div>
+            <div class="float-icon" style="font-size: 5rem; margin-bottom: 5px;">⚠️</div>
+            <h2 style="color: #e53935; margin-bottom: 15px; font-weight: 900;">決策失誤！扣除 1 點 HP</h2>
+            
+            <div class="feedback-box" style="border-color: #ff416c; background: #fff5f5;">
+                <strong style="color: #c62828; font-size: 1.25rem;">💡 錯誤解析：</strong>
+                <div class="explanation highlight-text" id="wrong-explanation-text"></div>
+            </div>
+            
+            <button id="btn-wrong-retry" class="btn btn-danger delayed-btn" style="margin-top: 15px;" onclick="drawNextQuestion()">重新挑戰本區另一題</button>
+        </div>
+    </div>
+
+    <div id="screen-feedback" class="screen">
+        <div class="float-icon" style="font-size: 5rem; margin-bottom: 5px;">🔓</div>
+        <h2 style="color: #11998e; margin-bottom: 15px; font-weight: 900;">解鎖成功！寶箱已開啟</h2>
+        <div class="feedback-box">
+            <strong style="color: #11998e; font-size: 1.25rem;">💡 藥安大師要點：</strong>
+            <div class="explanation highlight-text" id="explanation-text"></div>
+        </div>
+        <div class="loot-display delayed-btn" id="loot-display-container">
+            ✨ 獲得稀有裝備 ✨
+            <span id="loot-item" style="font-size: 3.5rem; display: block; margin-top: 10px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.15)); animation: popIn 0.6s ease-out;"></span>
+        </div>
+        <button id="btn-feedback-return" class="btn btn-primary delayed-btn" onclick="returnToMap()">放入背包並返回 🎒</button>
+    </div>
+
+    <div id="screen-combine" class="screen">
+        <h1 style="color: #005b9f; font-size: 2.2rem; font-weight: 900; margin-top: 30px;">正在合成神裝...</h1>
+        <div class="combine-arena" id="combine-arena">
+            <div class="combine-center" id="combine-center"></div>
+        </div>
+    </div>
+
+    <div id="screen-gameover" class="screen">
+        <div class="float-icon" style="font-size: 6rem; margin-bottom: 15px;">🥀</div>
+        <h1 style="color: #ff416c; margin-bottom: 12px; font-weight: 900; font-size: 2.5rem;">HP 歸零 ‧ 挑戰結束</h1>
+        <p class="animate-text highlight-text" id="gameover-desc" style="margin-bottom: 35px; color: var(--text-muted); padding: 0 20px;">
+            藥物安全關乎生命尊嚴，<strong>不容一絲差錯</strong>！<br>請溫習醫療指引，整裝待發再度前來。
+        </p>
+        <button id="btn-gameover-restart" class="btn btn-danger delayed-btn" onclick="resetGameToStart()">重返起點 (Restart)</button>
+    </div>
+
+    <div id="screen-win" class="screen">
+        <div class="confetti">✨🎉🎊🎉✨</div>
+        <div class="win-icon">👩‍⚕️👑👨‍⚕️</div>
+        <h1 style="background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; font-weight: 900; font-size: 2.8rem;">傳奇達成！</h1>
+        <h2 style="margin-bottom: 25px; color: #7000ff; font-size: 1.6rem; font-weight: 900;">神裝合成 ‧ 晉升藥安大師</h2>
+        <p class="animate-text highlight-text" id="win-desc" style="margin-bottom: 35px; color: #334155; padding: 0 15px;">
+            你已成功通過五大區域的嚴苛試煉！<br>臨床上請務必堅守 <strong>「三核五對」</strong> 黃金法則，伊院的病人安全將由你守護！
+        </p>
+        <button id="btn-win-restart" class="btn btn-success delayed-btn" onclick="resetGameToStart()">再度締造傳奇 (Play Again) 🏆</button>
+    </div>
+</div>
+
+<script>
+    // --- Text Fade In Animation Logic (Preserves HTML Tags) ---
+    function applyTextAnimation(el, onComplete, isDynamic = false) {
+        if (!isDynamic && !el.hasAttribute('data-original')) {
+            el.setAttribute('data-original', el.innerHTML);
+        }
+        const htmlToAnimate = isDynamic ? el.innerHTML : el.getAttribute('data-original');
+        
+        const temp = document.createElement('div');
+        temp.innerHTML = htmlToAnimate;
+        
+        let charIndex = 0;
+        const delayPerChar = 30; // 調整文字浮現速度
+        
+        function wrapNodes(node) {
+            if (node.nodeType === 3) { // Text node
+                const text = node.nodeValue;
+                const fragment = document.createDocumentFragment();
+                for (let i = 0; i < text.length; i++) {
+                    const char = text[i];
+                    if (char.trim() === '') {
+                        fragment.appendChild(document.createTextNode(char));
+                    } else {
+                        const span = document.createElement('span');
+                        span.innerText = char;
+                        span.className = 'char-fade';
+                        span.style.animationDelay = `${charIndex * delayPerChar}ms`;
+                        fragment.appendChild(span);
+                        charIndex++;
+                    }
+                }
+                node.parentNode.replaceChild(fragment, node);
+            } else if (node.nodeType === 1) { // Element node
+                if (node.tagName.toLowerCase() !== 'br') {
+                    Array.from(node.childNodes).forEach(wrapNodes);
+                }
+            }
+        }
+        
+        Array.from(temp.childNodes).forEach(wrapNodes);
+        
+        el.innerHTML = '';
+        while(temp.firstChild) {
+            el.appendChild(temp.firstChild);
+        }
+
+        if (onComplete) {
+            setTimeout(onComplete, charIndex * delayPerChar + 300); // 動畫結束後加上小緩衝再顯示按鈕
+        }
+    }
+
+    // --- Enhanced Questions Data Base (Removed "第X題" labels completely) ---
+    const rawQuestions = [
+        {
+            q: "為糖尿病病人（DM patient）抽取混合胰島素時，應先抽取<strong>中效（混濁）</strong>胰島素，再抽取<strong>短效（清澈）</strong>胰島素。",
+            opts: { "True": "✅ 正確 (True)", "False": "❌ 錯誤 (False)" },
+            ans: "False",
+            exp: "抽取順序應為「<strong>先清後濁</strong>」（先抽短效、後抽中效）。此外，如果兩支藥物皆為筆芯裝（Penfill），<strong>絕對不可</strong>使用常規胰島素針筒直接抽取使用。"
+        },
+        {
+            q: "皮下注射 Enoxaparin（抗凝血劑）後，應<strong>用力按壓</strong>注射部位 5 分鐘，以有效預防瘀青。",
+            opts: { "True": "✅ 正確 (True)", "False": "❌ 錯誤 (False)" },
+            ans: "False",
+            exp: "注射後用力按壓會<strong>加速藥物在皮下組織擴散</strong>，反而更容易導致注射部位出現<strong>瘀青、血腫或出血</strong>。"
+        },
+        {
+            q: "派發口服糖尿藥時，病人表示<strong>沒有胃口且當餐沒有進食</strong>。護士檢查其隨機血糖值為 <strong>4.2 mmol/L</strong>，認為讀數在正常範圍，故告訴病人血糖正常並指示其繼續服用糖尿藥。",
+            opts: { "True": "✅ 正確 (True)", "False": "❌ 錯誤 (False)" },
+            ans: "False",
+            exp: "病人未進食且血糖已<strong>接近低血糖臨界點</strong>，此時不應直接給藥。護士應先<strong>暫扣藥物</strong>，並立即通知醫生重新診斷與評估是否繼續服用糖尿藥。"
+        },
+        {
+            q: "派藥時，病人表示現時傷口不痛、不想服用 Panadol。護士為了方便，直接從病人的藥杯中拿出一粒白色圓形藥丸移走，隨後在 IPMOE 記錄病人拒服。",
+            opts: { "True": "✅ 正確 (True)", "False": "❌ 錯誤 (False)" },
+            ans: "False",
+            exp: "護士<strong>不可單憑顏色形狀直接盲抽藥丸</strong>。正確做法是先<strong>覆查病人的 IPMOE</strong> 確認處方，再準確辨識並抽起正確藥物，更新記錄後向醫生報告。"
+        },
+        {
+            q: "已知病人對<strong>青黴素（Penicillin）</strong>過敏，由於阿莫西林（Amoxicillin）是不同的藥物名稱，因此病人可以安全使用阿莫西林。",
+            opts: { "True": "✅ 正確 (True)", "False": "❌ 錯誤 (False)" },
+            ans: "False",
+            exp: "阿莫西林與青黴素屬於<strong>同一藥物類別（Same group）</strong>，存在極高的<strong>交叉過敏風險</strong>，對青黴素過敏者<strong>絕對不可使用</strong>。"
+        },
+        {
+            q: "病人投訴早上同事漏派血壓藥。護士檢查 IPMOE 顯示已有「已派」記錄，但因病人<strong>意識完全清醒（GCS full）</strong>，護士判斷應是記錄錯誤，於是決定<strong>當場重新給病人一粒</strong>血壓藥。",
+            opts: { "True": "✅ 正確 (True)", "False": "❌ 錯誤 (False)" },
+            ans: "False",
+            exp: "護士<strong>不應單憑主觀臆測補發藥物</strong>，以免造成重複給藥。正確做法是先<strong>為病人監測血壓、詳細核對記錄</strong>並向早班同事/主管釐清。"
+        },
+        {
+            q: "同事因為工作繁忙，想<strong>借用你的 IPMOE 帳戶密碼</strong>來雙簽並為病人輸注生理鹽水加鉀點滴。為了互相幫忙，你在 IPMOE 給予雙簽核對後，便馬上回去處理自己的工作。",
+            opts: { "True": "✅ 正確 (True)", "False": "❌ 錯誤 (False)" },
+            ans: "False",
+            exp: "氯化鉀點滴屬於<strong>高風險藥物</strong>。兩位護士必須同時、親自「<strong>床邊獨立雙人核對</strong>」，絕不可借出帳戶、借名或在未親自核對的情況下盲目雙簽。"
+        },
+        {
+            q: "看到醫生在 CMS 上手寫了醫囑 <strong>”+ HC Q8H”</strong>。你主動請實習醫生直接在 IPMOE 系統上開立 <strong>”IV hydrocortisone 100 mg Q8H”</strong>，以便儘快執行派藥。",
+            opts: { "True": "✅ 正確 (True)", "False": "❌ 錯誤 (False)" },
+            ans: "False",
+            exp: "手寫醫囑 ”+ HC” 字眼極其含糊。護士<strong>不應自行推測</strong>，而必須<strong>立即向主診醫生（MO）釐清（Clarify）</strong>，並要求將 CMS 和 IPMOE 兩個系統的處方同步更新完整。"
+        },
+        {
+            q: "臨床給藥安全中的「<strong>三查五對 (3 checks 5 rights)</strong>」，「五對」是指正確的病人、時間、藥物、劑量、給藥途徑；「三查」是指從藥櫃取出藥物時、由容器取出/準備藥物時、以及將藥物放回藥櫃前進行核對。",
+            opts: { "True": "✅ 正確 (True)", "False": "❌ 錯誤 (False)" },
+            ans: "True",
+            exp: "這是<strong>標準的藥物安全核對程序</strong>。三查分別為：(1) Take the drug out from the drawer, (2) After take out the drug from container/preparation, (3) Before putting back the drug into the drawer。"
+        },
+        {
+            q: "為了減少派藥次數並方便病人服用，<strong>甲狀腺素（Thyroxine）</strong>與<strong>鈣片（Calcium）</strong>可以被安排在同一個時間一起給病人服用。",
+            opts: { "True": "✅ 正確 (True)", "False": "❌ 錯誤 (False)" },
+            ans: "False",
+            exp: "鈣片會顯著干擾並降低甲狀腺素在腸道的吸收率。這兩隻藥物<strong>不可同服</strong>，服用時間建議最好<strong>分開 4 小時以上</strong>。"
+        },
+        {
+            q: "護士在 IPMOE 系統看到新處方顯示為 <strong>”First dose”</strong>，且系統提示可按時派發，此時護士可以<strong>直接派藥，不需要再覆查</strong>之前的給藥記錄。",
+            opts: { "True": "✅ 正確 (True)", "False": "❌ 錯誤 (False)" },
+            ans: "False",
+            exp: "看到 ”First dose” 時<strong>絕不可盲目直接派發</strong>。必須<strong>先翻查病人此前的記錄</strong>（如在急症室、手術室或其他病房），確認是否已經給予了臨時劑量，以防重複給藥。"
+        }
+    ];
+
+    const allEquipments = [
+        { name: "護士上衣 (Nurse Clothes)", icon: "🥼" },
+        { name: "護士長褲 (Nurse Pants)", icon: "👖" },
+        { name: "護士鞋 (Nurse Shoes)", icon: "👞" },
+        { name: "職員證 (Staff Card)", icon: "🪪" },
+        { name: "外科口罩 (Surgical Mask)", icon: "😷" }
+    ];
+
+    const hospitalAreas = ["急症室", "內科病房", "護士學校", "手術室大樓", "日間醫療中心"];
+
+    // --- Game State ---
+    let hp = 10;
+    let inventory = [];
+    let availableQuestions = [];
+    let availableEquipments = [];
+    let areasStatus = {}; 
+    let currentArea = "";
+    let currentQuestion = null;
+    let typingTimeout = null;
+
+    // --- Utility Functions ---
+    function updateHpDisplay() {
+        const percentage = (hp / 10) * 100;
+        document.getElementById('hp-text').innerText = `${hp} / 10`;
+        document.getElementById('dialogue-hp-text').innerText = `${hp} / 10`;
+        document.getElementById('q-hp-text').innerText = `${hp} / 10`;
+        document.getElementById('wrong-hp-text').innerText = `${hp} / 10`;
+        
+        document.getElementById('hp-bar-fill').style.width = `${percentage}%`;
+        document.getElementById('d-hp-bar-fill').style.width = `${percentage}%`;
+        document.getElementById('q-hp-bar-fill').style.width = `${percentage}%`;
+        document.getElementById('w-hp-bar-fill').style.width = `${percentage}%`;
+    }
+
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    // --- Game Flow Functions ---
+    function resetGameToStart() {
+        switchScreen('screen-start');
+        const startDesc = document.getElementById('start-desc');
+        const startBtn = document.getElementById('btn-start');
+        startBtn.classList.remove('show');
+        applyTextAnimation(startDesc, () => { startBtn.classList.add('show'); }, false);
+    }
+
+    function startGame() {
+        hp = 10;
+        inventory = [];
+        availableQuestions = shuffle([...rawQuestions]);
+        availableEquipments = shuffle([...allEquipments]);
+        
+        areasStatus = {};
+        hospitalAreas.forEach(area => areasStatus[area] = false);
+
+        updateHpDisplay();
+        renderMap();
+        renderInventory();
+        document.getElementById('btn-combine').classList.remove('show');
+        document.getElementById('btn-combine').style.display = 'none';
+
+        switchScreen('screen-map');
+    }
+
+    function renderMap() {
+        const areaContainer = document.getElementById('area-buttons');
+        areaContainer.innerHTML = '';
+
+        hospitalAreas.forEach(area => {
+            const isCompleted = areasStatus[area];
+            const btn = document.createElement('button');
+            btn.className = `area-btn ${isCompleted ? 'completed' : ''}`;
+            btn.disabled = isCompleted;
+            btn.innerHTML = `<span style="font-size: 2.2rem;">${isCompleted ? '✅' : '🚪'}</span><span style="letter-spacing:0.5px; margin-top:5px;">${area}</span><span style="font-size:0.8rem; font-weight:normal; color:var(--text-muted);">${isCompleted ? '已完成' : '點擊進入'}</span>`;
+            
+            if (!isCompleted) {
+                btn.onclick = () => enterArea(area);
+            }
+            areaContainer.appendChild(btn);
+        });
+    }
+
+    function renderInventory() {
+        const slotsContainer = document.getElementById('inventory-slots');
+        slotsContainer.innerHTML = '';
+        
+        for (let i = 0; i < 5; i++) {
+            const slot = document.createElement('div');
+            if (i < inventory.length) {
+                slot.className = 'slot filled';
+                slot.innerText = inventory[i].icon;
+                slot.title = inventory[i].name;
+            } else {
+                slot.className = 'slot';
+            }
+            slotsContainer.appendChild(slot);
+        }
+
+        if (inventory.length === 5) {
+            const combineBtn = document.getElementById('btn-combine');
+            combineBtn.style.display = 'flex';
+            setTimeout(() => combineBtn.classList.add('show'), 100);
+        }
+    }
+
+    function enterArea(areaName) {
+        currentArea = areaName;
+        document.getElementById('current-area-display').innerText = `${areaName}`;
+        
+        const dialogueBox = document.getElementById('dialogue-box');
+        const puzzleBtn = document.getElementById('btn-start-puzzle');
+        
+        dialogueBox.innerHTML = `你已進入 <strong>${areaName}</strong> ...<br>你發現了一個寶箱，上面有一道有關<strong>藥物安全</strong>的問題 …<br>冥冥中，你感覺到只要解謎成功將會獲得<strong>意想不到的驚喜</strong>！`;
+        puzzleBtn.classList.remove('show');
+        
+        switchScreen('screen-dialogue');
+        applyTextAnimation(dialogueBox, () => { puzzleBtn.classList.add('show'); }, true);
+    }
+
+    function goToQuestion() {
+        drawNextQuestion();
+    }
+
+    function drawNextQuestion() {
+        if (availableQuestions.length === 0) {
+            availableQuestions = shuffle([...rawQuestions]);
+        }
+        
+        currentQuestion = availableQuestions.pop();
+        
+        const qText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        
+        qText.innerHTML = currentQuestion.q;
+        optionsContainer.classList.remove('show');
+        optionsContainer.innerHTML = '';
+        
+        Object.keys(currentQuestion.opts).forEach(key => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = currentQuestion.opts[key];
+            btn.onclick = () => checkAnswer(key);
+            optionsContainer.appendChild(btn);
+        });
+
+        switchScreen('screen-question');
+        applyTextAnimation(qText, () => { optionsContainer.classList.add('show'); }, true);
+    }
+
+    function checkAnswer(selectedKey) {
+        if (selectedKey === currentQuestion.ans) {
+            areasStatus[currentArea] = true;
+            const loot = availableEquipments.pop();
+            inventory.push(loot);
+            
+            const expText = document.getElementById('explanation-text');
+            const returnBtn = document.getElementById('btn-feedback-return');
+            const lootContainer = document.getElementById('loot-display-container');
+            
+            expText.innerHTML = currentQuestion.exp;
+            returnBtn.classList.remove('show');
+            lootContainer.classList.remove('show');
+            document.getElementById('loot-item').innerText = `${loot.icon} ${loot.name}`;
+            
+            switchScreen('screen-feedback');
+            applyTextAnimation(expText, () => { 
+                lootContainer.classList.add('show');
+                setTimeout(() => returnBtn.classList.add('show'), 400); 
+            }, true);
+            
+        } else {
+            hp--;
+            updateHpDisplay();
+            
+            const container = document.getElementById('game-container');
+            container.classList.add('shake');
+            setTimeout(() => container.classList.remove('shake'), 500);
+
+            if (hp <= 0) {
+                setTimeout(() => { 
+                    switchScreen('screen-gameover'); 
+                    const goDesc = document.getElementById('gameover-desc');
+                    const goBtn = document.getElementById('btn-gameover-restart');
+                    goBtn.classList.remove('show');
+                    applyTextAnimation(goDesc, () => { goBtn.classList.add('show'); }, false);
+                }, 450);
+            } else {
+                setTimeout(() => { 
+                    switchScreen('screen-wrong'); 
+                    const wrongExpText = document.getElementById('wrong-explanation-text');
+                    const retryBtn = document.getElementById('btn-wrong-retry');
+                    
+                    wrongExpText.innerHTML = currentQuestion.exp;
+                    retryBtn.classList.remove('show');
+                    applyTextAnimation(wrongExpText, () => { retryBtn.classList.add('show'); }, true);
+                }, 450);
+            }
+        }
+    }
+
+    function returnToMap() {
+        renderMap();
+        renderInventory();
+        switchScreen('screen-map');
+    }
+
+    // --- Combine Animation Flow ---
+    function playCombineAnimation() {
+        switchScreen('screen-combine');
+        
+        const arena = document.getElementById('combine-arena');
+        const center = document.getElementById('combine-center');
+        const overlay = document.getElementById('flash-overlay');
+        
+        document.querySelectorAll('.combine-item').forEach(el => el.remove());
+        center.style.animation = 'none';
+        center.style.opacity = '0';
+        overlay.style.display = 'block';
+        overlay.style.opacity = '0';
+
+        const radius = 120;
+        const items = [];
+        
+        inventory.forEach((item, index) => {
+            const angle = (index / 5) * Math.PI * 2 - (Math.PI / 2);
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+
+            const el = document.createElement('div');
+            el.className = 'combine-item';
+            el.innerText = item.icon;
+            el.style.left = `calc(50% + ${x}px)`;
+            el.style.top = `calc(50% + ${y}px)`;
+            el.style.transform = 'translate(-50%, -50%) scale(0.5) rotate(-30deg)';
+            
+            arena.appendChild(el);
+            items.push(el);
+        });
+
+        setTimeout(() => {
+            items.forEach(el => {
+                el.style.opacity = '1';
+                el.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
+            });
+        }, 100);
+
+        setTimeout(() => {
+            items.forEach((el, index) => {
+                el.style.left = '50%';
+                el.style.top = '50%';
+                el.style.transform = `translate(-50%, -50%) scale(0.2) rotate(${360 * (index+1)}deg)`;
+                el.style.opacity = '0.5';
+            });
+            center.style.opacity = '1';
+        }, 1200);
+
+        setTimeout(() => {
+            center.style.animation = 'superGlow 0.8s forwards';
+        }, 2000);
+
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            overlay.style.transition = 'opacity 0.2s';
+        }, 2400);
+
+        setTimeout(() => {
+            switchScreen('screen-win');
+            overlay.style.transition = 'opacity 1s';
+            overlay.style.opacity = '0';
+            setTimeout(() => { overlay.style.display = 'none'; }, 1000);
+            
+            const winDesc = document.getElementById('win-desc');
+            const winBtn = document.getElementById('btn-win-restart');
+            winBtn.classList.remove('show');
+            applyTextAnimation(winDesc, () => { winBtn.classList.add('show'); }, false);
+
+        }, 2600);
+    }
+
+    // Init first screen animation
+    document.addEventListener("DOMContentLoaded", () => {
+        switchScreen('screen-start');
+        const startDesc = document.getElementById('start-desc');
+        const startBtn = document.getElementById('btn-start');
+        applyTextAnimation(startDesc, () => { startBtn.classList.add('show'); }, false);
+    });
+
+</script>
+
+</body>
+</html>
